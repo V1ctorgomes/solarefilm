@@ -192,7 +192,7 @@ function initContactForm() {
   const form = document.getElementById('contactForm');
   if (!form) return;
 
-  const WHATSAPP_NUMBER = form.dataset.whatsapp || '5585999652337';
+  const WHATSAPP_NUMBER = form.dataset.whatsapp || '5585989458022';
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
