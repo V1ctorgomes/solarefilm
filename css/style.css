@@ -270,13 +270,13 @@ ul {
 }
 
 .header__logo img {
-  height: 44px;
+  height: 48px;
   width: auto;
   transition: var(--transition);
 }
 
 .header--scrolled .header__logo img {
-  height: 38px;
+  height: 42px;
 }
 
 .nav__list {
@@ -1710,11 +1710,11 @@ ul {
   }
 
   .header__logo img {
-    height: 36px;
+    height: 40px;
   }
 
   .header--scrolled .header__logo img {
-    height: 32px;
+    height: 36px;
   }
 
   .hamburger {
