@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initSmoothScroll();
   initActiveNav();
   initWorksCarousel(reduceMotion);
+  initLightbox();
 });
 
 function initHeader() {
@@ -381,4 +382,79 @@ function initWorksCarousel(reduceMotion) {
   renderDots();
   update();
   restart();
+}
+
+function initLightbox() {
+  const lightbox = document.getElementById('lightbox');
+  if (!lightbox) return;
+
+  const imgEl = lightbox.querySelector('.lightbox__img');
+  const captionEl = lightbox.querySelector('.lightbox__caption');
+  const triggers = Array.from(
+    document.querySelectorAll('.svc-card__media img, .works-carousel__slide img')
+  );
+  if (!imgEl || !captionEl || !triggers.length) return;
+
+  let index = 0;
+
+  const open = (i) => {
+    index = (i + triggers.length) % triggers.length;
+    const source = triggers[index];
+    imgEl.src = source.currentSrc || source.src;
+    imgEl.alt = source.alt || '';
+    captionEl.textContent = source.alt || '';
+    lightbox.hidden = false;
+    lightbox.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  };
+
+  const close = () => {
+    lightbox.hidden = true;
+    lightbox.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  };
+
+  const next = () => open(index + 1);
+  const prev = () => open(index - 1);
+
+  triggers.forEach((img, i) => {
+    img.classList.add('is-zoomable');
+    img.setAttribute('role', 'button');
+    img.setAttribute('tabindex', '0');
+    img.setAttribute('aria-label', `Ampliar foto: ${img.alt || 'trabalho'}`);
+
+    img.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      open(i);
+    });
+
+    img.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        open(i);
+      }
+    });
+  });
+
+  lightbox.querySelectorAll('[data-lightbox-close]').forEach((el) => {
+    el.addEventListener('click', close);
+  });
+
+  lightbox.querySelector('[data-lightbox-next]')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    next();
+  });
+
+  lightbox.querySelector('[data-lightbox-prev]')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    prev();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (lightbox.hidden) return;
+    if (e.key === 'Escape') close();
+    if (e.key === 'ArrowRight') next();
+    if (e.key === 'ArrowLeft') prev();
+  });
 }
