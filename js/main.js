@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initContactForm();
   initSmoothScroll();
   initActiveNav();
+  initWorksCarousel(reduceMotion);
 });
 
 function initHeader() {
@@ -279,4 +280,105 @@ function initActiveNav() {
   );
 
   sections.forEach((section) => observer.observe(section));
+}
+
+function initWorksCarousel(reduceMotion) {
+  const root = document.querySelector('[data-carousel]');
+  if (!root) return;
+
+  const track = root.querySelector('.works-carousel__track');
+  const slides = Array.from(root.querySelectorAll('.works-carousel__slide'));
+  const prevBtn = root.querySelector('[data-carousel-prev]');
+  const nextBtn = root.querySelector('[data-carousel-next]');
+  const dotsWrap = root.querySelector('[data-carousel-dots]');
+  if (!track || !slides.length || !prevBtn || !nextBtn || !dotsWrap) return;
+
+  let index = 0;
+  let timer = null;
+
+  const getPerView = () => {
+    const width = window.innerWidth;
+    if (width <= 768) return 1;
+    if (width <= 1100) return 2;
+    return 3;
+  };
+
+  const maxIndex = () => Math.max(0, slides.length - getPerView());
+
+  const renderDots = () => {
+    const pages = maxIndex() + 1;
+    dotsWrap.innerHTML = '';
+    for (let i = 0; i < pages; i += 1) {
+      const dot = document.createElement('button');
+      dot.type = 'button';
+      dot.className = 'works-carousel__dot' + (i === index ? ' is-active' : '');
+      dot.setAttribute('aria-label', `Ir para grupo ${i + 1}`);
+      dot.addEventListener('click', () => goTo(i));
+      dotsWrap.appendChild(dot);
+    }
+  };
+
+  const update = () => {
+    const clamped = Math.min(index, maxIndex());
+    index = clamped;
+    track.style.transform = `translateX(-${(100 / getPerView()) * index}%)`;
+    dotsWrap.querySelectorAll('.works-carousel__dot').forEach((dot, i) => {
+      dot.classList.toggle('is-active', i === index);
+    });
+  };
+
+  const goTo = (next) => {
+    index = Math.max(0, Math.min(next, maxIndex()));
+    update();
+    restart();
+  };
+
+  const next = () => goTo(index >= maxIndex() ? 0 : index + 1);
+  const prev = () => goTo(index <= 0 ? maxIndex() : index - 1);
+
+  const stop = () => {
+    if (timer) {
+      clearInterval(timer);
+      timer = null;
+    }
+  };
+
+  const restart = () => {
+    stop();
+    if (reduceMotion) return;
+    timer = setInterval(next, 4200);
+  };
+
+  prevBtn.addEventListener('click', prev);
+  nextBtn.addEventListener('click', next);
+
+  root.addEventListener('mouseenter', stop);
+  root.addEventListener('mouseleave', restart);
+  root.addEventListener('focusin', stop);
+  root.addEventListener('focusout', restart);
+
+  let startX = 0;
+  track.addEventListener('touchstart', (e) => {
+    startX = e.changedTouches[0].clientX;
+    stop();
+  }, { passive: true });
+
+  track.addEventListener('touchend', (e) => {
+    const dx = e.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) > 40) {
+      if (dx < 0) next();
+      else prev();
+    } else {
+      restart();
+    }
+  }, { passive: true });
+
+  window.addEventListener('resize', () => {
+    renderDots();
+    update();
+  });
+
+  renderDots();
+  update();
+  restart();
 }
